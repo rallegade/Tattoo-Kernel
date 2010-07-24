@@ -32,6 +32,11 @@
 
 #include "ramzswap_drv.h"
 
+// TODO: Remove this if we port to a kernel version of 2.6.31 or higher
+#define blk_queue_physical_block_size(q, size) \
+	blk_queue_hardsect_size(q, size)
+#define blk_queue_logical_block_size(q, size)
+
 /* Globals */
 static int ramzswap_major;
 static struct ramzswap *devices;
