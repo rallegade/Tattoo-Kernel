@@ -1,7 +1,7 @@
 /*
  * Automatically generated C config: don't edit
  * Linux kernel version: 2.6.29.6
- * Fri Jul 30 21:22:50 2010
+ * Fri Jul 30 21:43:16 2010
  */
 #define AUTOCONF_INCLUDED
 #define CONFIG_VIDEO_V4L1_COMPAT 1
@@ -398,7 +398,6 @@
 #define CONFIG_SSB_POSSIBLE 1
 #define CONFIG_TICK_ONESHOT 1
 #define CONFIG_IP_NF_MATCH_TTL 1
-#define CONFIG_ANDROID_LOW_MEMORY_KILLER 1
 #define CONFIG_NETFILTER_XT_TARGET_TRACE 1
 #define CONFIG_CPU_32 1
 #define CONFIG_RWSEM_GENERIC_SPINLOCK 1
