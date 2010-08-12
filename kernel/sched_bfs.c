@@ -6485,3 +6485,5 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
 void proc_sched_set_task(struct task_struct *p)
 {}
 #endif
+
+EXPORT_SYMBOL_GPL(nr_running);
