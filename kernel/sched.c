@@ -1,4 +1,6 @@
 #ifdef CONFIG_SCHED_BFS
+unsigned int sysctl_sched_rt_period = 1000000;
+int sysctl_sched_rt_runtime = 950000;
 #include "sched_bfs.c"
 #else
 /*

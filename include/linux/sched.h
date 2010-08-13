@@ -36,8 +36,14 @@
 #define SCHED_FIFO		1
 #define SCHED_RR		2
 #define SCHED_BATCH		3
-/* SCHED_ISO: reserved but not implemented yet */
+/* SCHED_ISO: Implemented on BFS only */
 #define SCHED_IDLE		5
+#ifdef CONFIG_SCHED_BFS
+#define SCHED_ISO		4
+#define SCHED_IDLEPRIO		SCHED_IDLE
+#define SCHED_MAX		(SCHED_IDLEPRIO)
+#define SCHED_RANGE(policy)	((policy) <= SCHED_MAX)
+#endif
 
 #ifdef CONFIG_SCHED_BFS
 #define SCHED_ISO		4
@@ -190,6 +196,8 @@ extern unsigned long long time_sync_thresh;
 /* in tsk->state again */
 #define TASK_DEAD		64
 #define TASK_WAKEKILL		128
+#define TASK_WAKING		256
+#define TASK_STATE_MAX		512
 
 /* Convenience macros for the sake of set_task_state */
 #define TASK_KILLABLE		(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
@@ -577,6 +585,7 @@ struct signal_struct {
 	cputime_t utime, stime, cutime, cstime;
 	cputime_t gtime;
 	cputime_t cgtime;
+	cputime_t prev_utime, prev_stime;
 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
 	unsigned long inblock, oublock, cinblock, coublock;
@@ -979,6 +988,13 @@ struct uts_namespace;
 
 struct rq;
 struct sched_domain;
+
+/*
+ * wake flags
+ */
+#define WF_SYNC		0x01		/* waker goes to sleep after wakup */
+#define WF_FORK		0x02		/* child wakeup after fork */
+
 
 struct sched_class {
 	const struct sched_class *next;

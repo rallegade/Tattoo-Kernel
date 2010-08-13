@@ -28,18 +28,18 @@ struct msm_acpu_clock_platform_data {
 	unsigned long power_collapse_khz;
 	unsigned long wait_for_irq_khz;
 };
-enum msm_camera_flash_t {
-  MSM_CAMERA_FLASH_NONE,
-  MSM_CAMERA_FLASH_LED
-};
+
+#define MSM_CAMERA_FLASH_NONE 0
+#define MSM_CAMERA_FLASH_LED  1
+
 struct msm_camera_sensor_info {
+	const char *sensor_name;
 	int sensor_reset;
 	int sensor_pwd;
 	int vcm_pwd;
 	int mclk;
-	const char *sensor_name;
-	enum msm_camera_flash_t flash_type;
-	int (*sensor_probe)(void *, void *);
+	int flash_type;
+	struct msm_camera_device_platform_data *pdata;
 };
 
 struct msm_camera_io_ext {
@@ -48,21 +48,22 @@ struct msm_camera_io_ext {
 	uint32_t appphy;
 	uint32_t appsz;
 };
-//for mm-camera
-struct msm_camera_platform_data{
+
+// Referenced to sensor info, Htc style
+#if 0
+struct msm_camera_platform_data {
 	void (*camera_gpio_on) (void);
 	void (*camera_gpio_off)(void);
 	uint8_t snum;
 	struct msm_camera_sensor_info *sinfo;
 	struct msm_camera_io_ext ioext;
 };
+#endif
 
 struct msm_camera_device_platform_data {
-	int sensor_reset;
-	int sensor_pwd;
-	int vcm_pwd;
-	void (*config_gpio_on) (void);
-	void (*config_gpio_off)(void);
+	void (*camera_gpio_on) (void);
+	void (*camera_gpio_off)(void);
+	struct msm_camera_io_ext ioext;
 };
 
 struct snd_endpoint {

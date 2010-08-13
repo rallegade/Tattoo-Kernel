@@ -2,9 +2,9 @@
 #include <linux/errno.h>
 #include <mach/camera.h>
 
-int32_t flash_set_led_state(enum msm_camera_led_state_t led_state)
+int32_t flash_set_led_state(int led_state)
 {
-	int32_t rc;
+	int32_t rc = 0;
 
   CDBG("flash_set_led_state: %d\n", led_state);
   #if 0 //becker:need pmic driver to send driving current

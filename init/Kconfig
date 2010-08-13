@@ -25,11 +25,8 @@ config SCHED_BFS
 	  responsiveness on the desktop and solid scalability on normal
           hardware. Not recommended for 4096 CPUs.
 
-	  Currently incompatible with the Group CPU scheduler, RCU TORTURE
-          TEST so these options are disabled. Problems have also been reported
-          with the preemptible tree based hierarchical RCU, so if you run into
-          problems with this, try the non preemptible option or classical
-          option.
+	  Currently incompatible with the Group CPU scheduler, and RCU TORTURE
+          TEST so these options are disabled.
 
           Say Y here.
 	default y

@@ -37,6 +37,10 @@ static struct msm_camera_io_ext camio_ext;
 static struct resource *appio, *mdcio;
 void __iomem *appbase, *mdcbase;
 
+static struct msm_camera_io_ext camio_ext;
+static struct resource *appio, *mdcio;
+void __iomem *appbase, *mdcbase;
+
 extern int clk_set_flags(struct clk *clk, unsigned long flags);
 
 int msm_camio_clk_enable(enum msm_camio_clk_type clktype)
@@ -57,8 +61,10 @@ int msm_camio_clk_enable(enum msm_camio_clk_type clktype)
 		clk = camio_vfe_clk = clk_get(NULL, "vfe_clk");
 		break;
 
-	default:
+	default:{
+		CDBG_WARING("msm_camio_clk_enable:No such clk type:%d\n",clktype);
 		break;
+		}
 	}
 
 	if (!IS_ERR(clk)) {
@@ -87,8 +93,10 @@ int msm_camio_clk_disable(enum msm_camio_clk_type clktype)
 		clk = camio_vfe_clk;
 		break;
 
-	default:
+	default:{
+		CDBG_WARING("msm_camio_clk_disable:No such clk type:%d\n",clktype);
 		break;
+		}
 	}
 
 	if (!IS_ERR(clk)) {
@@ -111,14 +119,15 @@ void msm_camio_clk_rate_set(int rate)
 int msm_camio_enable(struct platform_device *pdev)
 {
 	int rc = 0;
-	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
-	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+	struct msm_camera_platform_data *camdev =
+		pdev->dev.platform_data;
 
 	camio_ext = camdev->ioext;
 
 	appio = request_mem_region(camio_ext.appphy,
 		camio_ext.appsz, pdev->name);
 	if (!appio) {
+		CDBG_ERR("msm_camio_enable:request pmem appio:0x%p\n",appio);
 		rc = -EBUSY;
 		goto enable_fail;
 	}
@@ -126,6 +135,7 @@ int msm_camio_enable(struct platform_device *pdev)
 	appbase = ioremap(camio_ext.appphy,
 		camio_ext.appsz);
 	if (!appbase) {
+		CDBG_ERR("msm_camio_enable:request pmem appbase:0x%p\n",appbase);
 		rc = -ENOMEM;
 		goto apps_no_mem;
 	}
@@ -133,6 +143,7 @@ int msm_camio_enable(struct platform_device *pdev)
 	mdcio = request_mem_region(camio_ext.mdcphy,
 		camio_ext.mdcsz, pdev->name);
 	if (!mdcio) {
+		CDBG_ERR("msm_camio_enable:request pmem mdcio:0x%p\n",mdcio);
 		rc = -EBUSY;
 		goto mdc_busy;
 	}
@@ -140,6 +151,7 @@ int msm_camio_enable(struct platform_device *pdev)
 	mdcbase = ioremap(camio_ext.mdcphy,
 		camio_ext.mdcsz);
 	if (!mdcbase) {
+		CDBG_ERR("msm_camio_enable:request pmem mdcbase:0x%p\n",mdcbase);
 		rc = -ENOMEM;
 		goto mdc_no_mem;
 	}
@@ -163,8 +175,8 @@ enable_fail:
 
 void msm_camio_disable(struct platform_device *pdev)
 {
-	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
-	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+	struct msm_camera_platform_data *camdev =
+		pdev->dev.platform_data;
 
 	iounmap(mdcbase);
 	release_mem_region(camio_ext.mdcphy, camio_ext.mdcsz);
@@ -264,24 +276,27 @@ void msm_camio_clk_sel(enum msm_camio_clk_src_type srctype)
 			clk_set_flags(clk, 0x00000100);
 			break;
 
-		default:
+		default:{
+			CDBG_WARING("msm_camio_clk_sel:No such srctype:%d\n",srctype);
 			break;
+		}
 		}
 	}
 }
-
 int msm_camio_probe_on(struct platform_device *pdev)
 {
-	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
-	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+	struct msm_camera_platform_data *camdev =
+		pdev->dev.platform_data;
+
 	camdev->camera_gpio_on();
 	return msm_camio_clk_enable(CAMIO_VFE_CLK);
 }
 
 int msm_camio_probe_off(struct platform_device *pdev)
 {
-	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
-	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+	struct msm_camera_platform_data *camdev =
+		pdev->dev.platform_data;
+
 	camdev->camera_gpio_off();
 	return msm_camio_clk_disable(CAMIO_VFE_CLK);
 }

@@ -24,9 +24,7 @@ static int msm_camera_remove(struct platform_device *pdev)
 
 static int __init msm_camera_probe(struct platform_device *dev)
 {
-	int rc;
-	rc = msm_camera_drv_start(dev);
-	return rc;
+	return msm_camera_drv_start(dev);
 }
 
 static struct platform_driver msm_camera_driver = {

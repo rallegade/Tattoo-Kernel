@@ -127,7 +127,7 @@ static struct  i2c_client *mt9t013_client;
 struct mt9t013_ctrl_t {
 	struct  msm_camera_sensor_info *sensordata;
 
-	enum sensor_mode_t sensormode;
+	int sensormode;
 	uint32_t fps_divider; 		/* init to 1 * 0x00000400 */
 	uint32_t pict_fps_divider; 	/* init to 1 * 0x00000400 */
 
@@ -1067,8 +1067,7 @@ static int32_t mt9t013_setting(enum mt9t013_reg_update_t rupdate,
 	return rc;
 }
 
-static int32_t mt9t013_video_config(enum sensor_mode_t mode,
-	enum sensor_resolution_t res)
+static int32_t mt9t013_video_config(int mode, int res)
 {
 	int32_t rc;
 
@@ -1102,7 +1101,7 @@ static int32_t mt9t013_video_config(enum sensor_mode_t mode,
 	return rc;
 }
 
-static int32_t mt9t013_snapshot_config(enum sensor_mode_t mode)
+static int32_t mt9t013_snapshot_config(int mode)
 {
 	int32_t rc = 0;
 
@@ -1118,7 +1117,7 @@ static int32_t mt9t013_snapshot_config(enum sensor_mode_t mode)
 	return rc;
 }
 
-static int32_t mt9t013_raw_snapshot_config(enum sensor_mode_t mode)
+static int32_t mt9t013_raw_snapshot_config(int mode)
 {
 	int32_t rc = 0;
 
@@ -1147,8 +1146,7 @@ static int32_t mt9t013_power_down(void)
 	return rc;
 }
 
-static int32_t mt9t013_move_focus(enum sensor_move_focus_t direction,
-	int32_t num_steps)
+static int32_t mt9t013_move_focus(int direction, int32_t num_steps)
 {
 	int16_t step_direction;
 	int16_t actual_step;
@@ -1212,19 +1210,19 @@ static int32_t mt9t013_move_focus(enum sensor_move_focus_t direction,
 	return 0;
 }
 
-static int mt9t013_sensor_init_done(struct msm_camera_sensor_info *data)
+static int mt9t013_sensor_init_done(const struct msm_camera_sensor_info *data)
 {
 	gpio_direction_output(data->sensor_reset, 0);
 	gpio_free(data->sensor_reset);
 	return 0;
 }
 
-static int mt9t013_probe_init_sensor(struct msm_camera_sensor_info *data)
+static int mt9t013_probe_init_sensor(const struct msm_camera_sensor_info *data)
 {
 	int rc;
 	uint16_t chipid;
 
-	rc = gpio_request(data->sensor_reset, "mt9t013");
+	rc = gpio_request(data->sensor_reset, "mt9t013"); // FIXME, vERIFIEd
 	if (!rc)
 		gpio_direction_output(data->sensor_reset, 1);
 	else
@@ -1283,6 +1281,7 @@ int mt9t013_sensor_open_init(struct msm_camera_sensor_info *data)
 {
 	int32_t  rc;
 
+	printk("** mt9t013_sensor_open_init **\n");
 	mt9t013_ctrl = kzalloc(sizeof(struct mt9t013_ctrl_t), GFP_KERNEL);
 	if (!mt9t013_ctrl) {
 		CDBG("mt9t013_init failed!\n");
@@ -1306,7 +1305,7 @@ int mt9t013_sensor_open_init(struct msm_camera_sensor_info *data)
 	msm_camio_camif_pad_reg_reset();
 	mdelay(20);
 
-  rc = mt9t013_probe_init_sensor(data);
+	rc = mt9t013_probe_init_sensor(data);
 	if (rc < 0)
 		goto init_fail;
 
@@ -1335,8 +1334,7 @@ static int mt9t013_init_client(struct i2c_client *client)
 }
 
 
-static int32_t mt9t013_set_sensor_mode(enum sensor_mode_t mode,
-            enum sensor_resolution_t res)
+static int32_t mt9t013_set_sensor_mode(int mode, int res)
 {
             int32_t rc = 0;
             rc =
@@ -1370,12 +1368,12 @@ static int32_t mt9t013_set_sensor_mode(enum sensor_mode_t mode,
 
 int mt9t013_sensor_config(void __user *argp)
 {
-	struct sensor_cfg_data_t cdata;
+	struct sensor_cfg_data cdata;
 	long   rc = 0;
 
 	if (copy_from_user(&cdata,
 				(void *)argp,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 		return -EFAULT;
 
 	down(&mt9t013_sem);
@@ -1390,7 +1388,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1400,7 +1398,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1410,7 +1408,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1420,7 +1418,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1430,7 +1428,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1440,7 +1438,7 @@ int mt9t013_sensor_config(void __user *argp)
 
 			if (copy_to_user((void *)argp,
 				&cdata,
-				sizeof(struct sensor_cfg_data_t)))
+				sizeof(struct sensor_cfg_data)))
 				rc = -EFAULT;
 			break;
 
@@ -1521,12 +1519,9 @@ int mt9t013_sensor_release(void)
 	return rc;
 }
 
-/*CC090708*/
 static const char *MT9T013Vendor = "micron";
 static const char *MT9T013NAME = "mt9t013";
 static const char *MT9T013Size = "3M";
-
-
 
 static ssize_t sensor_vendor_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -1565,7 +1560,6 @@ static int mt9t013_sysfs_init(void)
 	}
 	return 0 ;
 }
-/*CC090708~*/
 
 static int mt9t013_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
@@ -1590,7 +1584,6 @@ static int mt9t013_probe(struct i2c_client *client,
 	mt9t013_client->addr = mt9t013_client->addr >> 1;
 	mdelay(50);
 	init_suspend();
-    /*CC090708*/
 	mt9t013_sysfs_init();
 	return 0;
 
@@ -1625,6 +1618,7 @@ static struct i2c_driver mt9t013_driver = {
 	},
 };
 
+#if 0 // useless, cn.fyodor
 static int32_t mt9t013_init(void)
 {
 	int32_t rc = 0;
@@ -1638,22 +1632,27 @@ init_failure:
 	CDBG("mt9t013_init failed\n");
 	return rc;
 }
+#endif
 
 void mt9t013_exit(void)
 {
 	i2c_del_driver(&mt9t013_driver);
 }
 
-int mt9t013_probe_init(void *dev, void *ctrl)
+/* Name convention for consistency with board-bahamas.c from HTC
+ * mt9t013_sensor_probe named in ASOP kernel
+ * -- cn.fyodor
+ */
+int mt9t013_probe_init(
+		const struct msm_camera_sensor_info *info,
+		struct msm_sensor_ctrl *s)
 {
-	int rc = 0;
-	struct msm_camera_sensor_info *info =
-		(struct msm_camera_sensor_info *)dev;
+	int rc = i2c_add_driver(&mt9t013_driver);
 
-	struct msm_sensor_ctrl_t *s = (struct msm_sensor_ctrl_t *)ctrl;
-	rc = mt9t013_init();
-	if (rc < 0)
+	if (rc < 0 || mt9t013_client == NULL) {
+		rc = -ENOTSUPP;
 		goto probe_done;
+	}
 
 	/* enable mclk first */
 	msm_camio_clk_rate_set(MT9T013_DEFAULT_CLOCK_RATE);
@@ -1671,3 +1670,23 @@ int mt9t013_probe_init(void *dev, void *ctrl)
 probe_done:
 	return rc;
 }
+
+static int __mt9t013_probe(struct platform_device *pdev)
+{
+	return msm_camera_drv_start(pdev, mt9t013_probe_init);
+}
+
+static struct platform_driver msm_camera_driver = {
+	.probe = __mt9t013_probe,
+	.driver = {
+		.name = "msm_camera_mt9t013",
+		.owner = THIS_MODULE,
+	},
+};
+
+static int __init mt9t013_init(void)
+{
+	return platform_driver_register(&msm_camera_driver);
+}
+
+module_init(mt9t013_init);
