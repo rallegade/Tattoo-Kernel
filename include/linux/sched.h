@@ -36,14 +36,8 @@
 #define SCHED_FIFO		1
 #define SCHED_RR		2
 #define SCHED_BATCH		3
-/* SCHED_ISO: Implemented on BFS only */
+/* SCHED_ISO: reserved but not implemented yet */
 #define SCHED_IDLE		5
-#ifdef CONFIG_SCHED_BFS
-#define SCHED_ISO		4
-#define SCHED_IDLEPRIO		SCHED_IDLE
-#define SCHED_MAX		(SCHED_IDLEPRIO)
-#define SCHED_RANGE(policy)	((policy) <= SCHED_MAX)
-#endif
 
 #ifdef CONFIG_SCHED_BFS
 #define SCHED_ISO		4
@@ -196,8 +190,6 @@ extern unsigned long long time_sync_thresh;
 /* in tsk->state again */
 #define TASK_DEAD		64
 #define TASK_WAKEKILL		128
-#define TASK_WAKING		256
-#define TASK_STATE_MAX		512
 
 /* Convenience macros for the sake of set_task_state */
 #define TASK_KILLABLE		(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
@@ -218,8 +210,7 @@ extern unsigned long long time_sync_thresh;
 #define task_is_stopped_or_traced(task)	\
 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
 #define task_contributes_to_load(task)	\
-				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-				 (task->flags & PF_FROZEN) == 0)
+				((task->state & TASK_UNINTERRUPTIBLE) != 0)
 
 #define __set_task_state(tsk, state_value)		\
 	do { (tsk)->state = (state_value); } while (0)
@@ -585,7 +576,6 @@ struct signal_struct {
 	cputime_t utime, stime, cutime, cstime;
 	cputime_t gtime;
 	cputime_t cgtime;
-	cputime_t prev_utime, prev_stime;
 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
 	unsigned long inblock, oublock, cinblock, coublock;
@@ -988,13 +978,6 @@ struct uts_namespace;
 
 struct rq;
 struct sched_domain;
-
-/*
- * wake flags
- */
-#define WF_SYNC		0x01		/* waker goes to sleep after wakup */
-#define WF_FORK		0x02		/* child wakeup after fork */
-
 
 struct sched_class {
 	const struct sched_class *next;
@@ -1458,6 +1441,10 @@ struct task_struct {
 	/* state flags for use by tracers */
 	unsigned long trace;
 #endif
+#if 1//def      CONFIG_IOWAIT_ACCT
+        cputime64_t             iowait;
+        atomic_t                     in_iowait;
+#endif
 };
 #ifdef CONFIG_SCHED_BFS
 extern int grunqueue_is_locked(void);
@@ -1479,7 +1466,7 @@ static inline void tsk_cpus_current(struct task_struct *p)
 
 static inline void print_scheduler_version(void)
 {
-	printk(KERN_INFO"BFS CPU scheduler v0.313 by Con Kolivas.\n");
+	printk(KERN_INFO"BFS CPU scheduler v0.318 by Con Kolivas by darchstar.\n");
 }
 
 static inline int iso_task(struct task_struct *p)
