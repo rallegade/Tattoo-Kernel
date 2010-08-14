@@ -135,7 +135,7 @@ static inline void sg_inc_cpu_power(struct sched_group *sg, u32 val)
  * Value is in ms and set to a minimum of 6ms. Scales with number of cpus.
  * Tunable via /proc interface.
  */
-int rr_interval __read_mostly = 6;
+int rr_interval __read_mostly = 10;
 
 /*
  * sched_iso_cpu - sysctl which determines the cpu percentage SCHED_ISO tasks
@@ -3754,8 +3754,8 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
  * sys_sched_yield - yield the current processor to other threads.
  *
  * This function yields the current CPU to other tasks. It does this by
- * zeroing the rq timeslice, which will reset the deadline, and then
- * scheduling away.
+ * scheduling away the current task. If it still has the earliest deadline
+ * it will be scheduled again as the next task.
  */
 SYSCALL_DEFINE0(sched_yield)
 {
@@ -3765,7 +3765,6 @@ SYSCALL_DEFINE0(sched_yield)
 	p = current;
 	rq = task_grq_lock_irq(p);
 	schedstat_inc(rq, yld_count);
-	rq->rq_time_slice = 0;
 	requeue_task(p);
 
 	/*
