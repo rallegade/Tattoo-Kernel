@@ -77,7 +77,7 @@ source "drivers/staging/comedi/Kconfig"
 
 source "drivers/staging/asus_oled/Kconfig"
 
-source "drivers/staging/zram/Kconfig"
+source "drivers/staging/ramzswap/Kconfig"
 
 source "drivers/staging/panel/Kconfig"
 
